@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/raymondkembs/geolocation.git/static/css/main.f2c61821.css",
+    "main.js": "/raymondkembs/geolocation.git/static/js/main.e8fa864a.js",
+    "static/js/239.d736efcd.chunk.js": "/raymondkembs/geolocation.git/static/js/239.d736efcd.chunk.js",
+    "static/js/977.9d6ba03d.chunk.js": "/raymondkembs/geolocation.git/static/js/977.9d6ba03d.chunk.js",
+    "static/js/455.1812b214.chunk.js": "/raymondkembs/geolocation.git/static/js/455.1812b214.chunk.js",
+    "index.html": "/raymondkembs/geolocation.git/index.html",
+    "main.f2c61821.css.map": "/raymondkembs/geolocation.git/static/css/main.f2c61821.css.map",
+    "main.e8fa864a.js.map": "/raymondkembs/geolocation.git/static/js/main.e8fa864a.js.map",
+    "239.d736efcd.chunk.js.map": "/raymondkembs/geolocation.git/static/js/239.d736efcd.chunk.js.map",
+    "977.9d6ba03d.chunk.js.map": "/raymondkembs/geolocation.git/static/js/977.9d6ba03d.chunk.js.map",
+    "455.1812b214.chunk.js.map": "/raymondkembs/geolocation.git/static/js/455.1812b214.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f2c61821.css",
+    "static/js/main.e8fa864a.js"
+  ]
+}
