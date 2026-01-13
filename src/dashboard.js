@@ -1,13 +1,21 @@
 // src/dashboard.js
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, UserCog } from "lucide-react";
 
 import ModalPanel from "./components/ModalPanel";
+import lastWeekBookings from "./components/WeeklyBarGraph";
+import lastWeekEarnings from "./components/WeeklyBarGraph";
+import WeeklyBarGraph from "./components/WeeklyBarGraph";
 import WeeklyGraph from "./components/WeeklyGraph";
-import DataTable from "./components/DataTable";
+import DataTable from "./components/CleanerTableModal";
+// import DataTable from "./components/DataTable";
+import ReportsPanel from "./components/ReportsPanel";
 import CleanerDetailModal from "./components/CleanerDetailModal";
 import SidebarNav from "./components/SidebarNav";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
 import {
   collection,
@@ -92,6 +100,8 @@ function startOfDay(d = new Date()) {
 
 export default function DashboardLayout() {
   const [current, setCurrent] = useState(0);
+    // realtime locations (from RTDB)
+  const [locations, setLocations] = useState({});
 
   const navigate = useNavigate();
 
@@ -332,7 +342,116 @@ export default function DashboardLayout() {
   const adminEmail = adminProfile?.email || "admin@domain.com";
 
   /** ---------- Render ---------- */
-  
+  // deduplicate RTDB locations by uid, keep latest timestamp
+  const dedupedLocations = useMemo(() => {
+    const map = {};
+    Object.entries(locations || {}).forEach(([key, loc]) => {
+      if (!loc || !loc.uid || !loc.lat || !loc.lng) return;
+      const cur = map[loc.uid];
+      const ts = loc.timestamp || loc.updatedAt || 0;
+      if (!cur || (ts > (cur.timestamp || cur.updatedAt || 0))) {
+        map[loc.uid] = { ...loc, sessionKey: key };
+      }
+    });
+    return Object.values(map);
+  }, [locations]);
+
+  const cleanerMarkers = useMemo(() => {
+    return dedupedLocations.filter(l => String(l.role).toLowerCase() === 'cleaner' && l.lat && l.lng);
+  }, [dedupedLocations]);
+
+  // Fit bounds helper component for maps
+function FitBounds({ markers }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!markers || markers.length === 0) return;
+    try {
+      const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
+      if (markers.length === 1) {
+        map.setView([markers[0].lat, markers[0].lng], 12);
+      } else {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    } catch (e) {
+      console.warn('FitBounds failed', e);
+    }
+  }, [markers]);
+  return null;
+}
+
+// Leaflet icon helper (small copy from App.js)
+const createRoleIcon = (imageUrl, role = 'cleaner') =>
+  L.divIcon({
+    className: 'custom-div-icon',
+    html: `
+      <div class="marker-pin ${role}"></div>
+      <div class="icon-wrapper">
+        <img src="${imageUrl}" class="icon-image" alt="${role}" />
+      </div>
+    `,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+  });
+
+  const normalizeCleanerForView = (u) => {
+    const cleanerId = u.uid || u.id;
+
+    const completedJobs =
+      Number(u.completedJobs) ||
+      bookings.filter(
+        b =>
+          String(b.cleanerId) === String(cleanerId) &&
+          String(b.status).toLowerCase() === "closed"
+      ).length;
+
+
+    return {
+      id: cleanerId,
+      name: u.name || u.meta?.name || u.email || "—",
+      email: u.email || "—",
+      phone: u.phone || "—",
+      status: u.status || "—",
+
+      averageRating: Number(u.averageRating || 0),
+      ratingCount: Number(u.ratingCount || 0),
+
+      categories: Array.isArray(u.categories)
+        ? u.categories
+        : u.category
+          ? [u.category]
+          : [],
+
+      completedJobs,
+      // totalEarnings,
+    };
+  };
+
+
+  const calculateCleanerEarnings = (cleanerId) => {
+    if (!cleanerId) return 0;
+
+    // Map bookingId → cleanerId
+    const bookingCleanerMap = {};
+    bookings.forEach(b => {
+      if (b.id && b.cleanerId) {
+        bookingCleanerMap[b.id] = b.cleanerId;
+      }
+    });
+
+    return payments.reduce((sum, p) => {
+      if (!p || !p.bookingId) return sum;
+
+      const paidCleanerId = p.payeeId || bookingCleanerMap[p.bookingId];
+
+      if (String(paidCleanerId) !== String(cleanerId)) return sum;
+
+      const amount = Number(p.amount);
+      if (isNaN(amount)) return sum;
+
+      return sum + amount;
+    }, 0);
+  };
 
   // https://github.com/raymondkembs/geolocation.git
   return ( 
@@ -618,30 +737,64 @@ export default function DashboardLayout() {
             />
           </ModalPanel>
         )}
+ 
 
         {/* REPORTS */}
         {activePanel === "reports" && (
           <ModalPanel title="Reports & Analytics" onClose={() => setActivePanel("dashboard")}>
-            <h3 className="text-lg font-semibold mt-2 mb-2">Income Per Cleaner</h3>
-            <DataTable
-              columns={[
-                { key: "cleanerId", label: "Cleaner ID" },
-                { key: "total", label: "Total Income" }
-              ]}
-              data={reports.incomePerCleaner}
-              exportFilename="income_per_cleaner.csv"
-            />
+            <ReportsPanel onClose={() => setActivePanel('dashboard')} />
+          </ModalPanel>
+        )}
 
-            <h3 className="text-lg font-semibold mt-6 mb-2">Ratings Per Cleaner</h3>
-            <DataTable
-              columns={[
-                { key: "cleanerId", label: "Cleaner ID" },
-                { key: "average", label: "Average Rating" },
-                { key: "count", label: "Rating Count" }
-              ]}
-              data={reports.ratingsPerCleaner}
-              exportFilename="ratings_per_cleaner.csv"
-            />
+        {/* MAPS */}
+        {activePanel === "maps" && (
+          <ModalPanel title="Maps" onClose={() => setActivePanel("dashboard")}>
+            <div className="h-96">
+              {cleanerMarkers.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-gray-500">No active cleaners broadcasting location</div>
+              ) : (
+                <MapContainer
+                  className="h-96 w-full rounded"
+                  center={[cleanerMarkers[0].lat, cleanerMarkers[0].lng]}
+                  zoom={12}
+                  scrollWheelZoom={false}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <FitBounds markers={cleanerMarkers} />
+
+                  {cleanerMarkers.map((loc) => {
+                    const user = usersMap[loc.uid] || {};
+                    const image = user.photoURL || user.avatar || 'https://img.icons8.com/ios-filled/50/000000/worker-male.png';
+                    const icon = createRoleIcon(image, 'cleaner');
+                    return (
+                      <Marker key={loc.sessionKey || loc.uid} position={[loc.lat, loc.lng]} icon={icon}>
+                        <Popup>
+                          <div style={{minWidth:200}}>
+                            <div style={{fontWeight:600}}>{user.name || loc.name || loc.uid}</div>
+                            <div className="text-sm text-gray-500">{user.phone || ''}</div>
+                            <div className="text-sm mt-2">
+                              Categories:{' '}
+                              {Array.isArray(user.categories)
+                                ? user.categories.join(', ')
+                                : '—'}
+                            </div>
+                            <div className="text-sm text-gray-500 mt-2">Accuracy: {loc.accuracy ? Math.round(loc.accuracy) + ' m' : '—'}</div>
+                            <div className="text-sm text-gray-500">Last: {timeAgo(new Date(loc.timestamp || loc.updatedAt))} ago</div>
+                            <div className="mt-2 flex gap-2">
+                              <button className="px-2 py-1 bg-blue-500 text-white rounded text-sm" onClick={() => setSelectedCleaner(normalizeCleanerForView(user || { id: loc.uid, name: loc.name }))}>View Profile</button>
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  })}
+
+                </MapContainer>
+              )}
+            </div>
           </ModalPanel>
         )}
 

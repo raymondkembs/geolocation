@@ -7,7 +7,7 @@ import ProtectedAdminRoutes from "./Utils/ProtectedAdminRoutes";
 
 function MainRouter() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/geolocation">
       <Routes>
         <Route element={<LandingAuth />} path="/" />
         <Route element={<AdminLogin />} path="/admin-login" />
