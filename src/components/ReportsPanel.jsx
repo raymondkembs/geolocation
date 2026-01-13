@@ -100,7 +100,7 @@ export default function ReportsPanel({ onClose }) {
   return (
     <div className="p-4 ">
       <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="flex items-end gap-4 w-full rounded-lg bg-slate-50 border border-gray-200 bg-white px-4 py-3 shadow-sm">
+        <div className="flex items-end gap-4 w-full rounded-lg bg-slate-50 border border-gray-200 px-4 py-3 shadow-sm">
           {/* From Date */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
