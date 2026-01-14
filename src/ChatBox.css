@@ -1,6 +1,6 @@
 .chatbox-container {
   position: fixed;
-  top: 0px;
+  top: 0;
   right: 20px;
   width: 310px;
   max-height: 97vh;

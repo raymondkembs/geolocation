@@ -9,6 +9,7 @@ import ProfileForm from './components/profileform';
 import DashBoard from './dashboard';
 import ChatBox from './ChatBox';
 import { v4 as uuidv4 } from 'uuid';
+import { Eye, Sparkles, User } from 'lucide-react';
 
 // Firebase (RTDB + Auth + Firestore)
 import {
@@ -1190,59 +1191,130 @@ function App() {
         <div className="max-height: 97vh space-y-4 relative">
 
           {/* SESSION BOX */}
-          <div className="p-4 bg-white rounded shadow">
-            <h2 className="text-lg font-semibold">Session</h2>
+          <div className="rounded-xl bg-slate-100 shadow-sm border border-gray-100 p-5 space-y-4">
+            <header className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-gray-900">
+                Session
+              </h2>
+
+              <span className="text-xs px-2 py-1 rounded-full bg-white shadow text-gray-600">
+                Live
+              </span>
+            </header> 
+
             {!userRole && showRoleModal && (
-              <div className="mt-4">
-                <p className="mb-2">Who are you?</p>
-                <div className="flex gap-2">
-                  <button className="px-3 py-2 bg-gray-200 rounded"
-                          onClick={() => handleRoleSelect('viewer')}>
-                    Viewer
-                  </button>
-                  <button className="px-3 py-2 bg-green-500 text-white rounded"
-                          onClick={() => handleRoleSelect('cleaner')}>
-                    Cleaner
-                  </button>
-                  <button className="px-3 py-2 bg-blue-500 text-white rounded"
-                          onClick={() => handleRoleSelect('customer')}>
-                    Customer
-                  </button>
-                </div>  
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Choose your role
+                </p>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    {
+                      id: 'viewer',
+                      label: 'Viewer',
+                      icon: Eye,
+                      accent: 'indigo',
+                    },
+                    {
+                      id: 'cleaner',
+                      label: 'Cleaner',
+                      icon: Sparkles,
+                      accent: 'emerald',
+                    },
+                    {
+                      id: 'customer',
+                      label: 'Customer',
+                      icon: User,
+                      accent: 'blue',
+                    },
+                  ].map(({ id, label, icon: Icon, accent }) => (
+                    <button
+                      key={id}
+                      onClick={() => handleRoleSelect(id)}
+                      className={`
+                        group relative flex items-center justify-center gap-2 shadow-md
+                        rounded-xl border border-gray-200 bg-white px-0 py-3
+                        text-[11px] font-medium text-gray-700
+                        transition-all duration-200 ease-out 
+                        hover:border-${accent}-400 
+                        hover:shadow-sm
+                        focus:outline-none focus:ring-2 focus:ring-${accent}-400
+                      `}
+                    >
+                      {/* Icon */}
+                      <Icon
+                        size={18}
+                        className={`
+                          text-gray-400 transition-colors
+                          group-hover:text-${accent}-600
+                        `}
+                      />
+
+                      {/* Label */}
+                      <span className="tracking-tight">
+                        {label}
+                      </span>
+
+                      {/* Accent glow */}
+                      <span
+                        className={`
+                          pointer-events-none absolute inset-0 rounded-xl opacity-0
+                          group-hover:opacity-100
+                          ring-1 ring-${accent}-300/30
+                        `}
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-
-            <div className="mt-4">
+ 
+            <div className="flex items-center gap-3">
               <button
-                className="px-3 py-2 bg-indigo-600 text-white rounded"
                 onClick={toggleSharing}
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition
+                  ${sharing
+                    ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-400'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
               >
                 {sharing ? 'Stop Sharing' : 'Start Sharing'}
               </button>
 
               <button
-                className="ml-2 px-3 py-2 bg-white border rounded"
                 onClick={openProfileModal}
+                className="rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm
+                          text-gray-700 hover:bg-gray-50"
               >
                 Profile
               </button>
             </div>
 
-            <div className="mt-4 text-sm text-gray-600">
-              <div>Role: <strong>{userRole || '—'}</strong></div>
-              <div>
-                Availability:{' '}
-                <strong>
+            <div className="rounded-lg bg-white p-4 text-sm space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Role</span>
+                <span className="font-medium text-gray-900">
+                  {userRole || '—'}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">Availability</span>
+                <span className={`font-medium ${
+                  isAvailable ? 'text-green-600' : 'text-gray-500'
+                }`}>
                   {userRole === 'cleaner'
-                    ? (activeJob
-                        ? 'On Job'
-                        : (isAvailable ? 'Online' : 'Offline'))
-                    : (userRole === 'customer'
-                        ? (sharing ? 'Online' : 'Offline')
-                        : '-')}
-                </strong>
+                    ? activeJob
+                      ? 'On Job'
+                      : isAvailable ? 'Online' : 'Offline'
+                    : userRole === 'customer'
+                      ? sharing ? 'Online' : 'Offline'
+                      : '—'}
+                </span>
               </div>
             </div>
+
+            
           </div>
 
           {/* NOTIFICATIONS */}
