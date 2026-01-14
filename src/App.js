@@ -10,6 +10,19 @@ import DashBoard from './dashboard';
 import ChatBox from './ChatBox';
 import { v4 as uuidv4 } from 'uuid';
 import { Eye, Sparkles, User } from 'lucide-react';
+import ActionButton from './components/ActionButton';
+
+import {
+  Bell,
+  CheckCircle,
+  AlertTriangle,
+  Info,
+  MessageCircle,
+  Briefcase,
+  MapPin,
+  X,
+} from 'lucide-react';
+
 
 // Firebase (RTDB + Auth + Firestore)
 import {
@@ -1318,7 +1331,7 @@ function App() {
           </div>
 
           {/* NOTIFICATIONS */}
-          <div className="p-4 bg-white rounded shadow space-y-2">
+          {/* <div className="p-4 bg-white rounded shadow space-y-2">
             <h3 className="font-semibold">Notifications</h3>
 
             {customerNotice && (
@@ -1348,8 +1361,7 @@ function App() {
                     className="px-2 py-1 bg-gray-200 rounded"
                     onClick={() => {
                       setChatWith(incomingMessage.senderId);
-                      setIncomingMessage(null);
-                      // mark as read in unreadMessages handled by ChatBox close/interaction
+                      setIncomingMessage(null); 
                     }}
                   >
                     Open Chat
@@ -1357,8 +1369,7 @@ function App() {
                 </div>
               </div>
             )}
-
-            {/* ACTIVE JOB PANEL */}
+ 
             {activeJob ? (
               <div className="p-2 border rounded">
                 <div className="font-semibold">Job active</div>
@@ -1390,7 +1401,7 @@ function App() {
                     Cancel
                   </button>
 
-                  {/* CHAT */}
+                   
                   <button
                     className="px-2 py-1 bg-indigo-600 text-white rounded"
                     onClick={() => {
@@ -1445,7 +1456,6 @@ function App() {
               </div>
             ) : null}
 
-            {/* CUSTOMER REQUEST PANEL */}
             {currentCustomerRequest &&
              userRole === 'customer' &&
              currentCustomerRequest.status !== 'paid' && (
@@ -1482,11 +1492,10 @@ function App() {
                   )}
 
                 </div>
-
-                              {/* CLEANER PROFILE MODAL */}
+ 
               {showCleanerProfilePanel && (
                   <div className="bg-blue-100 p-4 mt-3 rounded shadow w-full max-w-md">
-                    {/* Header */}
+                     
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-semibold">
                         {cleanerProfile ? cleanerProfile.name : 'Loading...'}
@@ -1499,10 +1508,10 @@ function App() {
                       </button>
                     </div>
 
-                    {/* Role */}
+                     
                     <p className="text-sm text-gray-500 mb-2">Role: Cleaner</p>
 
-                    {/* Ratings */}
+                     
                     {cleanerProfile ? (
                       <div className="flex items-center mb-2">
                         {Array.from({ length: 5 }).map((_, i) => {
@@ -1523,14 +1532,14 @@ function App() {
                       <p>Loading ratings...</p>
                     )}
 
-                    {/* Completed Jobs */}
+                     
                     {cleanerProfile && (
                       <p className="text-sm text-gray-600">
                         Completed Jobs: {cleanerProfile.completedJobs}
                       </p>
                     )}
 
-                    {/* Bio */}
+                     
                     {cleanerProfile?.bio && <p className="mt-2 text-gray-700">{cleanerProfile.bio}</p>}
                   </div>
                 
@@ -1541,6 +1550,162 @@ function App() {
             )}
             
             
+          </div> */}
+
+          <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
+
+            {/* HEADER */}
+            <div className="flex items-center gap-2">
+              <Bell size={14} className="text-indigo-500" />
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                Notifications
+              </h3>
+            </div>
+
+            {/* CUSTOMER NOTICE */}
+            {customerNotice && (
+              <div
+                className={`
+                  relative rounded-xl px-3 py-2 text-xs
+                  border-l-4
+                  ${
+                    customerNotice.type === 'error'
+                      ? 'border-red-500 bg-red-50 text-red-700'
+                      : customerNotice.type === 'success'
+                      ? 'rounded-l-none border-green-500 bg-green-50 text-green-700'
+                      : 'rounded-l-none border-blue-400 bg-blue-50 text-blue-600'
+                  }
+                `}
+              >
+                <div className="flex items-start gap-2">
+                  {customerNotice.type === 'error' && <AlertTriangle size={14} />}
+                  {customerNotice.type === 'success' && <CheckCircle size={14} />}
+                  {customerNotice.type === 'info' && <Info size={14} />}
+
+                  <div className="flex-1">
+                    <div className="font-medium leading-tight">
+                      {customerNotice.title}
+                    </div>
+                    <div className="opacity-90">
+                      {customerNotice.body}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setCustomerNotice(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* INCOMING MESSAGE */}
+            {incomingMessage && (
+              <div className="rounded-xl bg-yellow-50 border border-yellow-200 px-3 py-2 text-xs">
+                <div className="flex items-center gap-2 text-yellow-700">
+                  <MessageCircle size={14} />
+                  <span className="font-medium">New message</span>
+                </div>
+
+                <div className="mt-1 text-gray-700 truncate">
+                  {incomingMessage.text}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setChatWith(incomingMessage.senderId);
+                    setIncomingMessage(null);
+                  }}
+                  className="mt-2 inline-flex items-center gap-1 rounded-md
+                            bg-yellow-500/10 px-2 py-1 text-yellow-700
+                            hover:bg-yellow-500/20 transition"
+                >
+                  Open chat →
+                </button>
+              </div>
+            )}
+
+            {/* ACTIVE JOB */}
+            {activeJob && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs space-y-2">
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <Briefcase size={14} />
+                  <span className="font-semibold">Active Job</span>
+                </div>
+
+                <div className="text-gray-700">
+                  Customer: <span className="font-medium">
+                    {activeJob.customerName || activeJob.customerUid}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <ActionButton icon={MapPin} label="Track" onClick={handleTrackCustomer} />
+                  <ActionButton
+                    label="Finish"
+                    color="emerald"
+                    onClick={finishJob}
+                    disabled={isProcessing}
+                  />
+                  <ActionButton
+                    label="Cancel"
+                    color="red"
+                    onClick={() => cancelActiveJob('cancelled_by_cleaner')}
+                  />
+                  <ActionButton
+                    label="Chat"
+                    color="indigo"
+                    onClick={() => {
+                      const target =
+                        userRole === 'cleaner'
+                          ? activeJob.customerUid
+                          : activeJob.cleanerUid;
+                      if (!target) return;
+                      setChatWith(target);
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* INCOMING REQUEST */}
+            {!activeJob && incomingRequest && (
+              <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs space-y-2">
+                <div className="font-semibold text-blue-700">
+                  Incoming Request
+                </div>
+
+                <div className="text-gray-700">
+                  From: {incomingRequest.customerName || incomingRequest.fromName}
+                </div>
+
+                <div className="flex gap-2">
+                  <ActionButton
+                    label="Track"
+                    color="blue"
+                    onClick={handleTrackCustomer}
+                  />
+                  <ActionButton label="Accept" color="emerald" onClick={acceptRequest} />
+                  <ActionButton
+                    label="Reject"
+                    color="red"
+                    onClick={async () => {
+                      if (!incomingRequest || !user?.uid) return;
+
+                      await rtdbSet(
+                        rtdbRef(database, `requests/${user.uid}`),
+                        { ...incomingRequest, status: 'rejected' }
+                      );
+
+                      setIncomingRequest(null);
+                    }}
+                  />
+  
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
