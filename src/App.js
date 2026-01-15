@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Eye, Sparkles, User } from 'lucide-react';
 import ActionButton from './components/ActionButton';
 
+
 import {
   Bell,
   CheckCircle,
@@ -53,6 +54,7 @@ import {
   onSnapshot,
   orderBy
 } from 'firebase/firestore';
+import MapView from './components/MapView';
 
 // Leaflet icon helpers
 const createRoleIcon = (imageUrl, role = 'cleaner') =>
@@ -118,6 +120,8 @@ function App() {
   const [showRoleModal, setShowRoleModal] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [ShowDashboardModal, setShowDashboardModal] = useState(false);
+  const [activeView, setActiveView] = useState('map');  
+
 
   /* -----------------------------
      SECTION 2 — Geolocation & RTDB
@@ -1711,11 +1715,83 @@ function App() {
         </div>
 
         {/* CENTER MAP */}
-        <div className="bg-white rounded h-[100%] shadow p-2">
+        <div className="bg-white rounded-xl shadow-lg h-[95vh] flex flex-col overflow-hidden">
+          {/* HEADER */}
+          <div className="px-4 py-3 border-b">
+            <h2 className="text-lg font-semibold">
+              {activeView === 'map' ? 'Live Map' : 'Conversation'}
+            </h2>
+          </div>
+
+          {/* TOGGLE */}
+          <div className="flex border-b bg-slate-100">
+            <button
+              onClick={() => setActiveView('map')}
+              className={`flex-1 py-2 m-1 shadow rounded-md text-sm font-medium transition
+                ${activeView === 'map'
+                  ? 'bg-blue-500 text-blue-100'
+                  : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+            >
+              Map
+            </button>
+
+            <button
+              onClick={() => setActiveView('chat')}
+              className={`flex-1 py-2 m-1 shadow rounded-md text-sm font-medium transition
+                ${activeView === 'chat'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-50 hover:bg-gray-200'
+                }`}
+              disabled={!chatWith}
+            >
+              Chat
+            </button>
+          </div>
+
+          {/* BODY */}
+          <div className="relative flex-1">
+            {activeView === 'map' && (
+              <div className="absolute inset-0">
+                <MapView
+                  targetCoords={targetCoords}
+                  currentCoords={currentCoords}
+                  customerCoords={customerCoords}
+                  activeJob={activeJob}
+                  visibleMarkers={visibleMarkers}
+                  hardcodedCleaners={hardcodedCleaners}
+                  recenterTrigger={recenterTrigger}
+                  setTargetCoords={setTargetCoords}
+                  setRecenterTrigger={setRecenterTrigger}
+                  userMarkerIcon={userMarkerIcon}
+                  createRoleIcon={createRoleIcon}
+                  renderPopupContentJSX={renderPopupContentJSX}
+                  RecenterMap={RecenterMap}
+                  ManualRoute={ManualRoute}
+                />
+              </div>
+            )}
+
+            {activeView === 'chat' && chatWith && user?.uid && (
+              <div className="absolute inset-0">
+                <ChatBox
+                  conversationId={generateConversationId(user.uid, chatWith)}
+                  recipientId={chatWith}
+                  userRole={userRole}
+                  onClose={() => setActiveView('map')}
+                />
+              </div>
+            )}
+          </div>
+      </div>
+
+        {/* <div className="bg-white rounded h-[100%] shadow p-2">
           <h2 className="text-lg font-semibold mb-2">Map</h2>
 
-          <div style={{ height: '80vh' }} className="rounded overflow-hidden">
-            <MapContainer
+          <div style={{ height: '80vh' }} className="rounded overflow-hidden"> */}
+            
+
+            {/* <MapContainer
               center={[0, 0]}
               zoom={2}
               className="h-full w-full"
@@ -1739,8 +1815,7 @@ function App() {
               {currentCoords && targetCoords && (
                 <ManualRoute from={currentCoords} to={targetCoords} />
               )}
-
-              {/* SELF MARKER */}
+ 
               {currentCoords && (
                 <Marker
                   position={[currentCoords.lat, currentCoords.lng]}
@@ -1750,7 +1825,6 @@ function App() {
                 </Marker>
               )}
 
-              {/* HARDCODED CLEANERS */}
               {hardcodedCleaners.map((c) => (
                 <Marker
                   key={c.id}
@@ -1779,7 +1853,6 @@ function App() {
                 </Marker>
               ))}
 
-              {/* VISIBLE MARKERS */}
               {visibleMarkers.map(([id, loc]) => (
                 <Marker
                   key={id}
@@ -1795,12 +1868,12 @@ function App() {
                 </Marker>
               ))}
 
-            </MapContainer>
-          </div>
-        </div>
+            </MapContainer> */}
+          {/* </div>
+        </div> */}
 
         {/* RIGHT CHAT PANEL */}
-        <div style={{
+        {/* <div style={{
           position: 'relative',
           overflow: 'hidden',
           transition: 'background 0.25s ease'
@@ -1820,7 +1893,7 @@ function App() {
               />
             </div>
           )}
-        </div>
+        </div> */}
 
       </div>
 
