@@ -120,7 +120,9 @@ function App() {
   const [showRoleModal, setShowRoleModal] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [ShowDashboardModal, setShowDashboardModal] = useState(false);
-  const [activeView, setActiveView] = useState('map');  
+  const [activeView, setActiveView] = useState('map'); 
+   
+  
 
 
   /* -----------------------------
@@ -1183,7 +1185,8 @@ function App() {
   /* -----------------------------
      CHAT PANEL LAYOUT LOGIC (NEW)
      ----------------------------- */
-  const chatPanelWidth = chatWith ? 320 : 0;
+  // const chatPanelWidth = chatWith ? 320 : 0;
+  const chatPanelWidth = 0;
 
   const mainGridStyle = {
     display: 'grid',
@@ -1198,8 +1201,14 @@ function App() {
   /* -----------------------------
      Main render
      ----------------------------- */
+
+  const handleStartChat = (cleanerId) => {
+  setChatWith(cleanerId);
+  setActiveView('chat');
+};
+
   return (
-    <div className="App m-0 bg-black-50">
+    <div className="App m-0 bg-gray-300">
 
       {/* MAIN LAYOUT GRID */}
       <div style={mainGridStyle}>
@@ -1333,228 +1342,6 @@ function App() {
 
             
           </div>
-
-          {/* NOTIFICATIONS */}
-          {/* <div className="p-4 bg-white rounded shadow space-y-2">
-            <h3 className="font-semibold">Notifications</h3>
-
-            {customerNotice && (
-              <div className={`p-3 rounded ${
-                customerNotice.type === 'error' ? 'bg-red-50'
-                : customerNotice.type === 'success' ? 'bg-green-50'
-                : 'bg-blue-50'
-              }`}>
-                <strong>{customerNotice.title}</strong>
-                <div>{customerNotice.body}</div>
-                <div className="mt-2">
-                  <button
-                    onClick={() => setCustomerNotice(null)}
-                    className="px-2 py-1 bg-gray-200 rounded"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {incomingMessage && (
-              <div className="p-2 bg-yellow-50 rounded">
-                <div><strong>Message:</strong> {incomingMessage.text}</div>
-                <div className="mt-2">
-                  <button
-                    className="px-2 py-1 bg-gray-200 rounded"
-                    onClick={() => {
-                      setChatWith(incomingMessage.senderId);
-                      setIncomingMessage(null); 
-                    }}
-                  >
-                    Open Chat
-                  </button>
-                </div>
-              </div>
-            )}
- 
-            {activeJob ? (
-              <div className="p-2 border rounded">
-                <div className="font-semibold">Job active</div>
-                <div>Customer: {activeJob.customerName || activeJob.customerUid}</div>
-                <div>Booking: {activeJob.bookingId}</div>
-                <div className="mt-2 flex gap-2">
-
-                  <button
-                    className="px-2 py-1 bg-blue-500 text-white rounded"
-                    onClick={handleTrackCustomer}
-                    disabled={isProcessing}
-                  >
-                    Track Customer
-                  </button>
-
-                  <button
-                    className="px-2 py-1 bg-green-500 text-white rounded"
-                    onClick={finishJob}
-                    disabled={isProcessing}
-                  >
-                    Finish Job
-                  </button>
-
-                  <button
-                    className="px-2 py-1 bg-red-500 text-white rounded"
-                    onClick={() => cancelActiveJob('cancelled_by_cleaner')}
-                    disabled={isProcessing}
-                  >
-                    Cancel
-                  </button>
-
-                   
-                  <button
-                    className="px-2 py-1 bg-indigo-600 text-white rounded"
-                    onClick={() => {
-                      const target =
-                        userRole === 'cleaner'
-                          ? activeJob.customerUid
-                          : activeJob.cleanerUid;
-                      if (!target) return alert('Chat target missing');
-                      setChatWith(target);
-                    }}
-                  >
-                    Chat
-                  </button>
-                </div>
-              </div>
-            ) : incomingRequest ? (
-              <div className="p-2 border rounded">
-                <div className="font-semibold">Incoming Request</div>
-                <div>From: {incomingRequest.customerName || incomingRequest.fromName || incomingRequest.from}</div>
-                <div className="mt-2 flex gap-2">
-
-                  <button
-                    className="px-2 py-1 bg-blue-500 text-white rounded"
-                    onClick={handleTrackCustomer}
-                  >
-                    Track
-                  </button>
-
-                  <button
-                    className="px-2 py-1 bg-green-500 text-white rounded"
-                    onClick={acceptRequest}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? 'Accepting...' : 'Accept'}
-                  </button>
-
-                  <button
-                    className="px-2 py-1 bg-red-500 text-white rounded"
-                    disabled={isProcessing}
-                    onClick={async () => {
-                      await rtdbSet(
-                        rtdbRef(database, `requests/${user.uid}`),
-                        { ...incomingRequest, status: 'rejected' }
-                      );
-                      setIncomingRequest(null);
-                    }}
-                  >
-                    Reject
-                  </button>
-
-                </div>
-              </div>
-            ) : null}
-
-            {currentCustomerRequest &&
-             userRole === 'customer' &&
-             currentCustomerRequest.status !== 'paid' && (
-              <div className="p-2 border rounded">
-                <div>
-                  <strong>Your request is:</strong>{' '}
-                  {currentCustomerRequest.status}
-                </div>
-
-                <div className="mt-2 flex gap-2">
-
-                  <button
-                    className="px-2 py-1 bg-red-500 text-white rounded"
-                    onClick={cancelCustomerRequest}
-                  >
-                    Cancel Request
-                  </button>
-
-                  {(currentCustomerRequest.status === 'accepted' ||
-                    activeJob) && (
-                    <button
-                      className="px-2 py-1 bg-indigo-600 text-white rounded"
-                      onClick={() => {
-                        const target =
-                          currentCustomerRequest.cleanerUid ||
-                          activeJob?.cleanerUid;
-                        if (!target)
-                          return alert('Cleaner not ready for chat.');
-                        setChatWith(target);
-                      }}
-                    >
-                      Chat
-                    </button>
-                  )}
-
-                </div>
- 
-              {showCleanerProfilePanel && (
-                  <div className="bg-blue-100 p-4 mt-3 rounded shadow w-full max-w-md">
-                     
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xl font-semibold">
-                        {cleanerProfile ? cleanerProfile.name : 'Loading...'}
-                      </h3>
-                      <button
-                        onClick={() => setShowCleanerProfilePanel(false)}
-                        className="px-2 py-1 text-gray-600 hover:text-gray-800"
-                      >
-                        Close
-                      </button>
-                    </div>
-
-                     
-                    <p className="text-sm text-gray-500 mb-2">Role: Cleaner</p>
-
-                     
-                    {cleanerProfile ? (
-                      <div className="flex items-center mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => {
-                          const starValue = i + 1;
-                          if (cleanerProfile.avgRating >= starValue) {
-                            return <span key={i} className="text-yellow-400 text-xl">★</span>;
-                          } else if (cleanerProfile.avgRating >= starValue - 0.5) {
-                            return <span key={i} className="text-yellow-400 text-xl">⯨</span>; // half star fallback
-                          } else {
-                            return <span key={i} className="text-gray-300 text-xl">★</span>;
-                          }
-                        })}
-                        <span className="ml-2 text-gray-700 font-medium">
-                          {cleanerProfile.avgRating.toFixed(1)} ({cleanerProfile.ratingCount})
-                        </span>
-                      </div>
-                    ) : (
-                      <p>Loading ratings...</p>
-                    )}
-
-                     
-                    {cleanerProfile && (
-                      <p className="text-sm text-gray-600">
-                        Completed Jobs: {cleanerProfile.completedJobs}
-                      </p>
-                    )}
-
-                     
-                    {cleanerProfile?.bio && <p className="mt-2 text-gray-700">{cleanerProfile.bio}</p>}
-                  </div>
-                
-              )}
-              
-
-              </div>
-            )}
-            
-            
-          </div> */}
 
           <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
 
@@ -1715,7 +1502,7 @@ function App() {
         </div>
 
         {/* CENTER MAP */}
-        <div className="bg-white rounded-xl shadow-lg h-[95vh] flex flex-col overflow-hidden">
+        <div className="bg-white w-[100%] rounded-xl shadow-lg h-[95vh] flex flex-col overflow-hidden">
           {/* HEADER */}
           <div className="px-4 py-3 border-b">
             <h2 className="text-lg font-semibold">
@@ -1768,6 +1555,7 @@ function App() {
                   renderPopupContentJSX={renderPopupContentJSX}
                   RecenterMap={RecenterMap}
                   ManualRoute={ManualRoute}
+                  onStartChat={handleStartChat}
                 />
               </div>
             )}
@@ -1778,123 +1566,16 @@ function App() {
                   conversationId={generateConversationId(user.uid, chatWith)}
                   recipientId={chatWith}
                   userRole={userRole}
-                  onClose={() => setActiveView('map')}
+                  onClose={() => {
+                    setActiveView('map');
+                    setChatWith(null);
+                  }}
                 />
               </div>
             )}
           </div>
       </div>
-
-        {/* <div className="bg-white rounded h-[100%] shadow p-2">
-          <h2 className="text-lg font-semibold mb-2">Map</h2>
-
-          <div style={{ height: '80vh' }} className="rounded overflow-hidden"> */}
-            
-
-            {/* <MapContainer
-              center={[0, 0]}
-              zoom={2}
-              className="h-full w-full"
-            >
-              {(targetCoords || currentCoords) && (
-                <RecenterMap
-                  coords={targetCoords || currentCoords}
-                  trigger={recenterTrigger}
-                />
-              )}
-
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; OpenStreetMap contributors"
-              />
-
-              {currentCoords && customerCoords && activeJob && (
-                <ManualRoute from={currentCoords} to={customerCoords} />
-              )}
-
-              {currentCoords && targetCoords && (
-                <ManualRoute from={currentCoords} to={targetCoords} />
-              )}
  
-              {currentCoords && (
-                <Marker
-                  position={[currentCoords.lat, currentCoords.lng]}
-                  icon={userMarkerIcon}
-                >
-                  <Popup>You (this device)</Popup>
-                </Marker>
-              )}
-
-              {hardcodedCleaners.map((c) => (
-                <Marker
-                  key={c.id}
-                  position={[c.lat, c.lng]}
-                  icon={createRoleIcon(
-                    'https://img.icons8.com/ios-filled/50/000000/broom.png',
-                    'cleaner'
-                  )}
-                >
-                  <Popup>
-                    <div>
-                      <strong>Demo Cleaner: {c.id}</strong>
-                      <div className="mt-2">
-                        <button
-                          className="px-2 py-1 bg-blue-500 text-white rounded"
-                          onClick={() => {
-                            setTargetCoords({ lat: c.lat, lng: c.lng });
-                            setRecenterTrigger((t) => t + 1);
-                          }}
-                        >
-                          Track This Cleaner
-                        </button>
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-
-              {visibleMarkers.map(([id, loc]) => (
-                <Marker
-                  key={id}
-                  position={[loc.lat, loc.lng]}
-                  icon={createRoleIcon(
-                    loc.role === 'cleaner'
-                      ? 'https://img.icons8.com/ios-filled/50/000000/broom.png'
-                      : 'https://img.icons8.com/ios-filled/50/000000/user.png',
-                    loc.role
-                  )}
-                >
-                  <Popup>{renderPopupContentJSX(loc)}</Popup>
-                </Marker>
-              ))}
-
-            </MapContainer> */}
-          {/* </div>
-        </div> */}
-
-        {/* RIGHT CHAT PANEL */}
-        {/* <div style={{
-          position: 'relative',
-          overflow: 'hidden',
-          transition: 'background 0.25s ease'
-        }}>
-          {chatWith && user?.uid && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              transform: chatWith ? 'translateX(0)' : 'translateX(100%)',
-              transition: 'transform 0.30s ease',
-            }}>
-              <ChatBox
-                conversationId={generateConversationId(user.uid, chatWith)}
-                recipientId={chatWith}
-                onClose={() => setChatWith(null)}
-                userRole={userRole}
-              />
-            </div>
-          )}
-        </div> */}
-
       </div>
 
       {/* DASHBOARD MODAL */}

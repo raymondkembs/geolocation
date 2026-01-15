@@ -1,4 +1,4 @@
-.chatbox-container {
+/* .chatbox-container {
   position: fixed;
   top: 0;
   right: 20px;
@@ -13,7 +13,18 @@
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   z-index: 1000;
+} */
+
+.chatbox-container {
+  position: relative; /* ← THIS IS THE KEY */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 0; /* container already rounded */
 }
+
 
 /* === Header === */
 .chatbox-header {

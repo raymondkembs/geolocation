@@ -6,6 +6,7 @@ import {
   Popup
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { MapPin, MessageCircle } from 'lucide-react';
 
 export default function MapView({
   targetCoords,
@@ -21,7 +22,8 @@ export default function MapView({
   createRoleIcon,
   renderPopupContentJSX,
   RecenterMap,
-  ManualRoute
+  ManualRoute,
+  onStartChat
 }) {
   return (
     <MapContainer center={[0, 0]} zoom={2} className="h-full w-full">
@@ -65,7 +67,7 @@ export default function MapView({
           )}
         >
           <Popup>
-            <strong>Demo Cleaner: {c.id}</strong>
+            {/* <strong>Demo Cleaner: {c.id}</strong>
             <button
               className="mt-2 px-2 py-1 bg-blue-500 text-white rounded"
               onClick={() => {
@@ -75,6 +77,64 @@ export default function MapView({
             >
               Track This Cleaner
             </button>
+
+            <button
+              className="px-2 py-1 bg-green-500 text-white rounded"
+              onClick={() => onStartChat(c.id)}
+            >
+              Chat
+            </button> */}
+            <div className="space-y-1">
+              {/* Cleaner title */}
+              <div className="text-sm font-semibold text-gray-800">
+                Demo Cleaner
+                <span className="ml-1 text-gray-500 font-normal">
+                  #{c.id}
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                {/* Track button */}
+                <button
+                  onClick={() => {
+                    setTargetCoords({ lat: c.lat, lng: c.lng });
+                    setRecenterTrigger(t => t + 1);
+                  }}
+                  className="
+                    inline-flex items-center gap-1.5
+                    rounded-md px-3 py-1.5
+                    text-xs font-medium
+                    bg-blue-500 text-white
+                    shadow-sm
+                    hover:bg-blue-600
+                    active:scale-95
+                    transition
+                  "
+                >
+                  <MapPin size={14} />
+                  Track
+                </button>
+
+                {/* Chat button */}
+                <button
+                  onClick={() => onStartChat(c.id)}
+                  className="
+                    inline-flex items-center gap-1.5
+                    rounded-md px-3 py-1.5
+                    text-xs font-medium
+                    bg-emerald-500 text-white
+                    shadow-sm
+                    hover:bg-emerald-600
+                    active:scale-95
+                    transition
+                  "
+                >
+                  <MessageCircle size={14} />
+                  Chat
+                </button>
+              </div>
+            </div>
           </Popup>
         </Marker>
       ))}

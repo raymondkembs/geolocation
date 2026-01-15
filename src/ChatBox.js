@@ -79,7 +79,7 @@ function ChatBox({ conversationId: propConversationId, recipientId, onClose, use
       {/* Header */}
       <div className="chatbox-header">
         <span className="chat-title">💬 Talking to: <strong>{talkingTo}</strong></span>
-        <button onClick={onClose} className="chatbox-close-button">✖</button>
+        <button onClick={onClose} className="chatbox-close-button">x</button>
       </div>
 
       {/* Messages */}
