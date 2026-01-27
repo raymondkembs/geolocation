@@ -25,6 +25,9 @@ import { database } from "../firebaseConfig";
 import { ref as rtdbRef, get as rtdbGet, update as rtdbUpdate } from "firebase/database";
 
 export default function ProfileForm({ user }) {
+
+  console.log("ProfileForm received UID:", user?.uid);
+
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [avgRating, setAvgRating] = useState(0);

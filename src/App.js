@@ -122,9 +122,6 @@ function App() {
   const [ShowDashboardModal, setShowDashboardModal] = useState(false);
   const [activeView, setActiveView] = useState('map'); 
    
-  
-
-
   /* -----------------------------
      SECTION 2 — Geolocation & RTDB
      ----------------------------- */
@@ -1188,15 +1185,15 @@ function App() {
   // const chatPanelWidth = chatWith ? 320 : 0;
   const chatPanelWidth = 0;
 
-  const mainGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: `380px 1fr ${chatPanelWidth}px`,
-    gap: '1rem',
-    width: '95%',
-    height: '750px',
-    margin: '1rem auto',
-    transition: 'grid-template-columns 0.30s ease',
-  };
+  // const mainGridStyle = {
+  //   display: 'grid',
+  //   gridTemplateColumns: `380px 1fr ${chatPanelWidth}px`,
+  //   gap: '1rem',
+  //   width: '95%',
+  //   height: '750px',
+  //   margin: '1rem auto',
+  //   transition: 'grid-template-columns 0.30s ease',
+  // };
 
   /* -----------------------------
      Main render
@@ -1207,14 +1204,38 @@ function App() {
   setActiveView('chat');
 };
 
+const roleStyles = {
+  viewer: {
+    ring: 'focus:ring-indigo-400',
+    hoverBorder: 'hover:border-indigo-400',
+    hoverText: 'group-hover:text-indigo-600',
+    glow: 'ring-indigo-300/30',
+  },
+  cleaner: {
+    ring: 'focus:ring-emerald-400',
+    hoverBorder: 'hover:border-emerald-400',
+    hoverText: 'group-hover:text-emerald-600',
+    glow: 'ring-emerald-300/30',
+  },
+  customer: {
+    ring: 'focus:ring-blue-400',
+    hoverBorder: 'hover:border-blue-400',
+    hoverText: 'group-hover:text-blue-600',
+    glow: 'ring-blue-300/30',
+  },
+};
+
+
   return (
-    <div className="App m-0 bg-gray-300">
+    <div className="App relative w-full min-h-screen bg-gray-300">
 
       {/* MAIN LAYOUT GRID */}
-      <div style={mainGridStyle}>
+      {/* <div style={mainGridStyle}> */}
+      <div className="px-2 py-5 w-full max-w-[1400px] mx-auto grid gap-4 grid-cols-1 lg:grid-cols-[380px_1fr] h-full">
 
         {/* LEFT PANEL */}
-        <div className="max-height: 97vh space-y-4 relative">
+        {/* <div className="max-height: 97vh space-y-4 relative"> */}
+        <div className="lg:w-[380px] w-full flex flex-col space-y-4">
 
           {/* SESSION BOX */}
           <div className="rounded-xl bg-slate-100 shadow-sm border border-gray-100 p-5 space-y-4">
@@ -1232,67 +1253,57 @@ function App() {
               <div className="space-y-2">
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   Choose your role
-                </p>
-
-                <div className="grid grid-cols-3 gap-2">
+                </p> 
+                <div className="grid gap-2 grid-cols-1 sm:grid-cols-3">
                   {[
-                    {
-                      id: 'viewer',
-                      label: 'Viewer',
-                      icon: Eye,
-                      accent: 'indigo',
-                    },
-                    {
-                      id: 'cleaner',
-                      label: 'Cleaner',
-                      icon: Sparkles,
-                      accent: 'emerald',
-                    },
-                    {
-                      id: 'customer',
-                      label: 'Customer',
-                      icon: User,
-                      accent: 'blue',
-                    },
-                  ].map(({ id, label, icon: Icon, accent }) => (
-                    <button
-                      key={id}
-                      onClick={() => handleRoleSelect(id)}
-                      className={`
-                        group relative flex items-center justify-center gap-2 shadow-md
-                        rounded-xl border border-gray-200 bg-white px-0 py-3
-                        text-[11px] font-medium text-gray-700
-                        transition-all duration-200 ease-out 
-                        hover:border-${accent}-400 
-                        hover:shadow-sm
-                        focus:outline-none focus:ring-2 focus:ring-${accent}-400
-                      `}
-                    >
-                      {/* Icon */}
-                      <Icon
-                        size={18}
-                        className={`
-                          text-gray-400 transition-colors
-                          group-hover:text-${accent}-600
-                        `}
-                      />
+                    { id: 'viewer', label: 'Viewer', icon: Eye },
+                    { id: 'cleaner', label: 'Cleaner', icon: Sparkles },
+                    { id: 'customer', label: 'Customer', icon: User },
+                  ].map(({ id, label, icon: Icon }) => {
+                    const styles = roleStyles[id];
 
-                      {/* Label */}
-                      <span className="tracking-tight">
-                        {label}
-                      </span>
-
-                      {/* Accent glow */}
-                      <span
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => handleRoleSelect(id)}
                         className={`
-                          pointer-events-none absolute inset-0 rounded-xl opacity-0
-                          group-hover:opacity-100
-                          ring-1 ring-${accent}-300/30
+                          group relative flex items-center
+                          justify-start sm:justify-center
+                          gap-3 sm:gap-2
+                          rounded-xl border border-gray-200 bg-white
+                          px-4 py-3 shadow-sm
+                          text-sm sm:text-[11px] font-medium text-gray-700
+                          transition-all duration-200 ease-out
+                          hover:shadow-md
+                          focus:outline-none focus:ring-2
+                          ${styles.hoverBorder}
+                          ${styles.ring}
                         `}
-                      />
-                    </button>
-                  ))}
+                      >
+                        {/* Icon */}
+                        <Icon
+                          size={18}
+                          className={`text-gray-400 transition-colors ${styles.hoverText}`}
+                        />
+
+                        {/* Label */}
+                        <span className="tracking-tight">
+                          {label}
+                        </span>
+
+                        {/* Accent glow */}
+                        <span
+                          className={`
+                            pointer-events-none absolute inset-0 rounded-xl opacity-0
+                            group-hover:opacity-100 ring-1 ${styles.glow}
+                          `}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
+
+
               </div>
             )}
  
@@ -1502,80 +1513,84 @@ function App() {
         </div>
 
         {/* CENTER MAP */}
-        <div className="bg-white w-[100%] rounded-xl shadow-lg h-[95vh] flex flex-col overflow-hidden">
-          {/* HEADER */}
-          <div className="px-4 py-3 border-b">
-            <h2 className="text-lg font-semibold">
-              {activeView === 'map' ? 'Live Map' : 'Conversation'}
-            </h2>
-          </div>
-
-          {/* TOGGLE */}
-          <div className="flex border-b bg-slate-100">
-            <button
-              onClick={() => setActiveView('map')}
-              className={`flex-1 py-2 m-1 shadow rounded-md text-sm font-medium transition
-                ${activeView === 'map'
-                  ? 'bg-blue-500 text-blue-100'
-                  : 'bg-gray-100 hover:bg-gray-200'
-                }`}
-            >
-              Map
-            </button>
-
-            <button
-              onClick={() => setActiveView('chat')}
-              className={`flex-1 py-2 m-1 shadow rounded-md text-sm font-medium transition
-                ${activeView === 'chat'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-50 hover:bg-gray-200'
-                }`}
-              disabled={!chatWith}
-            >
-              Chat
-            </button>
-          </div>
-
-          {/* BODY */}
-          <div className="relative flex-1">
-            {activeView === 'map' && (
-              <div className="absolute inset-0">
-                <MapView
-                  targetCoords={targetCoords}
-                  currentCoords={currentCoords}
-                  customerCoords={customerCoords}
-                  activeJob={activeJob}
-                  visibleMarkers={visibleMarkers}
-                  hardcodedCleaners={hardcodedCleaners}
-                  recenterTrigger={recenterTrigger}
-                  setTargetCoords={setTargetCoords}
-                  setRecenterTrigger={setRecenterTrigger}
-                  userMarkerIcon={userMarkerIcon}
-                  createRoleIcon={createRoleIcon}
-                  renderPopupContentJSX={renderPopupContentJSX}
-                  RecenterMap={RecenterMap}
-                  ManualRoute={ManualRoute}
-                  onStartChat={handleStartChat}
-                />
+        <div className="w-full h-[95vh]">
+          <div className="w-full h-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden p-2 lg:p-0">
+            {/* <div className="bg-white w-[155%] h-[95vh] rounded-xl shadow-lg flex flex-col overflow-hidden"> */}
+              {/* HEADER */}
+              <div className="px-4 py-3 border-b">
+                <h2 className="text-lg font-semibold">
+                  {activeView === 'map' ? 'Live Map' : 'Conversation'} 
+                </h2>
               </div>
-            )}
 
-            {activeView === 'chat' && chatWith && user?.uid && (
-              <div className="absolute inset-0">
-                <ChatBox
-                  conversationId={generateConversationId(user.uid, chatWith)}
-                  recipientId={chatWith}
-                  userRole={userRole}
-                  onClose={() => {
-                    setActiveView('map');
-                    setChatWith(null);
-                  }}
-                />
+              {/* TOGGLE */}
+              <div className="flex border-b bg-slate-100">
+                <button
+                  onClick={() => setActiveView('map')}
+                  className={`flex-1 py-2 m-1 shadow rounded-md text-sm font-medium transition
+                    ${activeView === 'map'
+                      ? 'bg-blue-500 text-blue-100'
+                      : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                >
+                  Map
+                </button>
+
+                <button
+                  onClick={() => setActiveView('chat')}
+                  className={`flex-1 py-2 m-1 shadow rounded-md text-sm font-medium transition
+                    ${activeView === 'chat'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-50 hover:bg-gray-200'
+                    }`}
+                  disabled={!chatWith}
+                >
+                  Chat
+                </button>
               </div>
-            )}
+
+              {/* BODY */}
+              <div className="relative flex-1 w-full h-full">
+                {activeView === 'map' && (
+                  <div className="absolute inset-0">
+                    <MapView
+                      targetCoords={targetCoords}
+                      currentCoords={currentCoords}
+                      customerCoords={customerCoords}
+                      activeJob={activeJob}
+                      visibleMarkers={visibleMarkers}
+                      hardcodedCleaners={hardcodedCleaners}
+                      recenterTrigger={recenterTrigger}
+                      setTargetCoords={setTargetCoords}
+                      setRecenterTrigger={setRecenterTrigger}
+                      userMarkerIcon={userMarkerIcon}
+                      createRoleIcon={createRoleIcon}
+                      renderPopupContentJSX={renderPopupContentJSX}
+                      RecenterMap={RecenterMap}
+                      ManualRoute={ManualRoute}
+                      onStartChat={handleStartChat}
+                    />
+                  </div>
+                )}
+
+                <div className="relative flex-1 w-full h-full">
+                  {activeView === 'chat' && chatWith && user?.uid && (
+                    <div className="absolute inset-0 lg:static w-full h-full">
+                      <ChatBox
+                        conversationId={generateConversationId(user.uid, chatWith)}
+                        recipientId={chatWith}
+                        userRole={userRole}
+                        onClose={() => {
+                          setActiveView('map');
+                          setChatWith(null);
+                        }}
+                      />
+                    </div>
+                    )}
+                  </div>
+                </div>
           </div>
-      </div>
- 
+        </div>
       </div>
 
       {/* DASHBOARD MODAL */}

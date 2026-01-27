@@ -16,14 +16,18 @@ import SidebarNav from "./components/SidebarNav";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import ProfileForm from "./components/profileform";
+// import { getAuth, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 
+ 
 import {
   collection,
   onSnapshot,
   doc,
   deleteDoc,
   query,
-  where
+  where,
+  updateDoc
 } from "firebase/firestore";
 
 import {
@@ -102,16 +106,22 @@ export default function DashboardLayout() {
   const [current, setCurrent] = useState(0);
     // realtime locations (from RTDB)
   const [locations, setLocations] = useState({});
-
+  
   const navigate = useNavigate();
 
   const [activePanel, setActivePanel] = useState("dashboard");
+  const [showAdminEdit, setShowAdminEdit] = useState(false);
+  // modal selection
+  const [adminEditName, setAdminEditName] = useState("");
+  const [adminEditEmail, setAdminEditEmail] = useState("");
+ 
 
   // raw collections
   const [usersMap, setUsersMap] = useState({}); // id -> user
   const [cleaners, setCleaners] = useState([]); // array of cleaner users
   const [bookings, setBookings] = useState([]); // array of bookings
   const [payments, setPayments] = useState([]); // array of payments (if needed)
+  
 
   // weekly stats
   const [weeklyBookings, setWeeklyBookings] = useState(new Array(7).fill(0));
@@ -141,7 +151,7 @@ export default function DashboardLayout() {
 
   /** ---------- realtime: users (all) ---------- */
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "users"), (snap) => {
+      const unsub = onSnapshot(collection(db, "users"), (snap) => {
       const map = {};
       const cleanersList = [];
       let admin = null;
@@ -160,7 +170,7 @@ export default function DashboardLayout() {
 
   /** ---------- realtime: bookings ---------- */
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "bookings"), (snap) => {
+      const unsub = onSnapshot(collection(db, "bookings"), (snap) => {
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setBookings(list);
     });
@@ -169,7 +179,7 @@ export default function DashboardLayout() {
 
   /** ---------- realtime: payments (if present) ---------- */
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "payments"), (snap) => {
+      const unsub = onSnapshot(collection(db, "payments"), (snap) => {
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setPayments(list);
     });
@@ -454,6 +464,13 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
   };
 
   // https://github.com/raymondkembs/geolocation.git
+  useEffect(() => {
+  if (showAdminEdit && adminProfile) {
+    setAdminEditName(adminProfile.name || "");
+    setAdminEditEmail(adminProfile.email || "");
+  }
+}, [showAdminEdit, adminProfile]);
+
   return ( 
     <div className="flex min-h-screen bg-gray-100">
       {/* SIDEBAR */}
@@ -484,7 +501,7 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
           {/* Actions */}
           <div className="flex gap-2">
             <button
-              onClick={endAdminSession}
+              onClick={() => setShowAdminEdit(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
                         bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition"
             >
@@ -493,6 +510,7 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
             </button>
 
             <button
+              onClick={endAdminSession}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
                         bg-red-50 text-red-700 hover:bg-red-100 transition"
             >
@@ -746,6 +764,23 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
           </ModalPanel>
         )}
 
+      {console.log("Dashboard adminProfile:", adminProfile)}
+        {/* Profile Edit Modal */}
+       {activePanel === "profile" && (
+          <ModalPanel
+            title="My Profile"
+            onClose={() => setActivePanel("dashboard")}
+          >
+            {adminProfile ? (
+              <ProfileForm user={{ uid: adminProfile.uid }} />
+            ) : (
+              <div className="p-6 text-gray-500 text-sm">
+                Loading profile…
+              </div>
+            )}
+          </ModalPanel>
+        )}
+ 
         {/* MAPS */}
         {activePanel === "maps" && (
           <ModalPanel title="Maps" onClose={() => setActivePanel("dashboard")}>
@@ -811,6 +846,31 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
             <div className="h-64 flex items-center justify-center text-gray-500">Chat Logs / Conversations Placeholder</div>
           </ModalPanel>
         )}
+ 
+{console.log(showAdminEdit, adminProfile)}
+    {showAdminEdit && adminProfile && (
+      <ModalPanel
+        title="Edit Admin Profile"
+        onClose={() => setShowAdminEdit(false)}
+      >
+        <input value={adminEditName} onChange={e => setAdminEditName(e.target.value)} />
+        <input value={adminEditEmail} onChange={e => setAdminEditEmail(e.target.value)} />
+        <button
+          onClick={async () => {
+            await updateDoc(doc(db, "users", adminProfile.id), {
+              name: adminEditName,
+              email: adminEditEmail
+            });
+            setShowAdminEdit(false);
+          }}
+        >
+          Save
+        </button>
+      </ModalPanel>
+    )}
+
+
+
 
       </main>
     </div>

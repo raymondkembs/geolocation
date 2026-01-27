@@ -1,28 +1,10 @@
-/* .chatbox-container {
-  position: fixed;
-  top: 0;
-  right: 20px;
-  width: 310px;
-  max-height: 97vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  z-index: 1000;
-} */
-
-.chatbox-container {
-  position: relative; /* ← THIS IS THE KEY */
+ .chatbox-container {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   background: white;
-  border-radius: 0; /* container already rounded */
+  border-radius: 0;  
 }
 
 

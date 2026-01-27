@@ -49,33 +49,81 @@ export default function AdminLogin() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-200">
-      <div className="bg-white p-6 shadow-lg rounded w-full max-w-sm">
-        <h2 className="text-xl font-bold mb-4">Admin Login</h2>
+  return ( 
+ 
+     <div className="relative min-h-screen flex items-center justify-center bg-stone-100 overflow-hidden">
 
-        <input
-          className="w-full border p-2 rounded mb-3"
-          placeholder="Admin Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+        {/* Background circles */}
+        <div className="absolute inset-0">
 
-        <input
-          className="w-full border p-2 rounded mb-3"
-          type="password"
-          placeholder="Admin Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          {/* Big green circle (top-left) */}
+          <div className="absolute -top-32 -left-32 w-[420px] h-[420px]
+                          bg-emerald-700 rounded-full
+                          border-4 border-black opacity-90" />
 
-        <button
-          className="w-full py-2 bg-orange-600 text-white rounded"
-          onClick={handleLogin}
-        >
-          Login
-        </button>
+          {/* Medium red circle (top-right) */}
+          <div className="absolute top-20 -right-24 w-[280px] h-[280px]
+                          bg-red-600 rounded-full
+                          border-4 border-black opacity-85" />
+
+          {/* Large black circle (bottom-right) */}
+          <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px]
+                          bg-black rounded-full opacity-80" />
+
+          {/* White accent circle (bottom-left) */}
+          <div className="absolute bottom-24 left-20 w-[180px] h-[180px]
+                          bg-white rounded-full
+                          border-4 border-red-500 opacity-90" />
+
+          {/* Small floating green */}
+          <div className="absolute top-1/2 left-10 w-[90px] h-[90px]
+                          bg-emerald-600 rounded-full
+                          border-2 border-black opacity-80" />
+
+          {/* Small floating red */}
+          <div className="absolute bottom-1/3 right-24 w-[70px] h-[70px]
+                          bg-red-500 rounded-full
+                          border-2 border-black opacity-80" />
+        </div>
+
+        {/* Dim overlay */}
+        <div className="absolute inset-0 bg-black/10" />
+
+        {/* Login Card */}
+        <div className="relative z-10 w-full max-w-sm mx-4 bg-white
+                        shadow-xl rounded-2xl p-8">
+
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            Admin Login
+          </h2>
+
+          <input
+            className="w-full border border-gray-300 p-3 rounded-lg mb-4
+                      focus:outline-none focus:ring-2 focus:ring-red-500"
+            placeholder="Admin Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+
+          <input
+            className="w-full border border-gray-300 p-3 rounded-lg mb-6
+                      focus:outline-none focus:ring-2 focus:ring-red-500"
+            type="password"
+            placeholder="Admin Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button
+            onClick={handleLogin}
+            className="w-full py-3 rounded-lg font-semibold text-white
+                      bg-red-600 hover:bg-red-700
+                      transition-colors duration-200"
+          >
+            Login
+          </button>
+        </div>
       </div>
-    </div>
+
   );
 }

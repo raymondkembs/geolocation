@@ -75,7 +75,7 @@ function ChatBox({ conversationId: propConversationId, recipientId, onClose, use
   const talkingTo = userRole === 'customer' ? 'Cleaner' : 'Customer';
 
   return (
-    <div className="chatbox-container">
+    <div className="chatbox-container w-full h-full max-w-full ">
       {/* Header */}
       <div className="chatbox-header">
         <span className="chat-title">💬 Talking to: <strong>{talkingTo}</strong></span>

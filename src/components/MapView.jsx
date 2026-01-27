@@ -67,23 +67,6 @@ export default function MapView({
           )}
         >
           <Popup>
-            {/* <strong>Demo Cleaner: {c.id}</strong>
-            <button
-              className="mt-2 px-2 py-1 bg-blue-500 text-white rounded"
-              onClick={() => {
-                setTargetCoords({ lat: c.lat, lng: c.lng });
-                setRecenterTrigger(t => t + 1);
-              }}
-            >
-              Track This Cleaner
-            </button>
-
-            <button
-              className="px-2 py-1 bg-green-500 text-white rounded"
-              onClick={() => onStartChat(c.id)}
-            >
-              Chat
-            </button> */}
             <div className="space-y-1">
               {/* Cleaner title */}
               <div className="text-sm font-semibold text-gray-800">
