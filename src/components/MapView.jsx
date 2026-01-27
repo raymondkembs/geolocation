@@ -1,4 +1,6 @@
 import React from 'react';
+import { useEffect } from 'react';
+import { useMap } from 'react-leaflet';
 import {
   MapContainer,
   TileLayer,
@@ -7,6 +9,20 @@ import {
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, MessageCircle } from 'lucide-react';
+
+function MapResizer({ trigger }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
+
+    return () => clearTimeout(timeout);
+  }, [map, trigger]);
+
+  return null;
+}
 
 export default function MapView({
   targetCoords,
@@ -25,8 +41,12 @@ export default function MapView({
   ManualRoute,
   onStartChat
 }) {
+ 
+
   return (
     <MapContainer center={[0, 0]} zoom={2} className="h-full w-full">
+
+      <MapResizer trigger={recenterTrigger} />
 
       {(targetCoords || currentCoords) && (
         <RecenterMap

@@ -1550,7 +1550,7 @@ const roleStyles = {
               </div>
 
               {/* BODY */}
-              <div className="relative flex-1 w-full h-full">
+              <div className="relative w-full flex-1 min-h-0">
                 {activeView === 'map' && (
                   <div className="absolute inset-0">
                     <MapView
@@ -1573,9 +1573,9 @@ const roleStyles = {
                   </div>
                 )}
 
-                <div className="relative flex-1 w-full h-full">
+                {/* <div className="relative flex-1 w-full h-full"> */}
                   {activeView === 'chat' && chatWith && user?.uid && (
-                    <div className="absolute inset-0 lg:static w-full h-full">
+                    <div className="absolute inset-0 ">
                       <ChatBox
                         conversationId={generateConversationId(user.uid, chatWith)}
                         recipientId={chatWith}
@@ -1587,7 +1587,7 @@ const roleStyles = {
                       />
                     </div>
                     )}
-                  </div>
+                  {/* </div> */}
                 </div>
           </div>
         </div>
