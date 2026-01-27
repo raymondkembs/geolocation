@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/geolocation/static/css/main.574eb011.css",
-    "main.js": "/geolocation/static/js/main.62548cf6.js",
+    "main.css": "/geolocation/static/css/main.b5b6ea6f.css",
+    "main.js": "/geolocation/static/js/main.47811586.js",
     "static/js/239.d736efcd.chunk.js": "/geolocation/static/js/239.d736efcd.chunk.js",
     "static/js/977.9d6ba03d.chunk.js": "/geolocation/static/js/977.9d6ba03d.chunk.js",
     "static/js/455.1812b214.chunk.js": "/geolocation/static/js/455.1812b214.chunk.js",
     "index.html": "/geolocation/index.html",
-    "main.574eb011.css.map": "/geolocation/static/css/main.574eb011.css.map",
-    "main.62548cf6.js.map": "/geolocation/static/js/main.62548cf6.js.map",
+    "main.b5b6ea6f.css.map": "/geolocation/static/css/main.b5b6ea6f.css.map",
+    "main.47811586.js.map": "/geolocation/static/js/main.47811586.js.map",
     "239.d736efcd.chunk.js.map": "/geolocation/static/js/239.d736efcd.chunk.js.map",
     "977.9d6ba03d.chunk.js.map": "/geolocation/static/js/977.9d6ba03d.chunk.js.map",
     "455.1812b214.chunk.js.map": "/geolocation/static/js/455.1812b214.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.574eb011.css",
-    "static/js/main.62548cf6.js"
+    "static/css/main.b5b6ea6f.css",
+    "static/js/main.47811586.js"
   ]
 }
