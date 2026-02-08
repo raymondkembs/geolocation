@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-import { getDatabase, ref, set, onValue, remove } from 'firebase/database';
+import { getDatabase, ref, set, onValue, remove, update } from 'firebase/database';
 import { getStorage } from 'firebase/storage'; // ✅ Add storage import
 
 
@@ -21,7 +21,7 @@ const firestore = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app); // ✅ Add storage export
 
-export { database, app, firestore, auth, storage, signInAnonymously, ref, set, onValue, remove };
+export { database, app, firestore, auth, storage, signInAnonymously, ref, set, onValue, remove, update };
 
 
 

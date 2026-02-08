@@ -171,7 +171,7 @@ export default function DataTable({
                         className="px-2 py-1 bg-yellow-100 rounded"
                         onClick={() => onEdit(row)}
                       >
-                        View
+                        Views
                       </button>
                     )}
                     {onDelete && (

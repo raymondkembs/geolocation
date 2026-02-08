@@ -11,6 +11,7 @@ import ChatBox from './ChatBox';
 import { v4 as uuidv4 } from 'uuid';
 import { Eye, Sparkles, User } from 'lucide-react';
 import ActionButton from './components/ActionButton';
+// import { auth } from './firebaseConfig';
 
 
 import {
@@ -30,6 +31,7 @@ import {
   database,
   ref as rtdbRef,
   set as rtdbSet,
+  update as rtdbUpdate,
   onValue,
   get as rtdbGet,
   remove as rtdbRemove,
@@ -55,7 +57,7 @@ import {
   orderBy
 } from 'firebase/firestore';
 import MapView from './components/MapView';
-
+ 
 // Leaflet icon helpers
 const createRoleIcon = (imageUrl, role = 'cleaner') =>
   L.divIcon({
@@ -108,6 +110,11 @@ const hardcodedCleaners = [
 ];
 
 function App() {
+  const DEV_MODE = true;
+  const BOT_CLEANER_ID = 'bot_cleaner_001';
+  const currentUser = auth.currentUser;
+
+
   /* -----------------------------
      SECTION 1 — Session + Profile
      ----------------------------- */
@@ -308,6 +315,7 @@ function App() {
      - Cleaner: sees ONLY the customer who requested them (or their active job)
      ----------------------------- */
   const visibleMarkers = Object.entries(allLocations).filter(([id, loc]) => {
+    console.log('MAP LOC:', id, loc);
     if (!loc || !loc.lat || !loc.lng || !loc.role) return false;
     const isSelf = loc.sessionId === sessionId || loc.uid === user?.uid;
     if (isSelf) return true;
@@ -1224,6 +1232,210 @@ const roleStyles = {
     glow: 'ring-blue-300/30',
   },
 };
+
+// -----Spawn BOT Section----------
+
+const sendBotFirstMessage = async (customerUid) => {
+  const convoId = [customerUid, BOT_CLEANER_ID].sort().join('_');
+
+  const messagesRef = collection(
+    db,
+    'conversations',
+    convoId,
+    'messages'
+  );
+
+  await addDoc(messagesRef, {
+    sender: BOT_CLEANER_ID,
+    text: '🤖 Hello! I’ve accepted your request. How can I help?',
+    createdAt: serverTimestamp(),
+  });
+
+  console.log('✅ Bot first message sent');
+};
+
+
+// -----------Spawn Bot Section----------
+
+const spawnBotCleaner = async () => {
+  if (!currentCoords) return;
+
+  await rtdbSet(
+    rtdbRef(database, `locations/${BOT_CLEANER_ID}`),
+    {
+      sessionId: `bot_${BOT_CLEANER_ID}`,
+      uid: BOT_CLEANER_ID,
+      role: 'cleaner',
+      name: 'Bot Cleaner 🤖',
+      lat: currentCoords.lat + 0.0007,
+      lng: currentCoords.lng + 0.0007,
+      isAvailable: true,
+      timestamp: Date.now(),
+    }
+  );
+
+  console.log('🤖 Bot cleaner spawned');
+};
+
+useEffect(() => {
+  if (!DEV_MODE) return;
+  if (userRole !== 'customer') return;
+  if (!currentCoords) return;
+
+  spawnBotCleaner();
+}, [DEV_MODE, userRole, currentCoords]);
+
+
+useEffect(() => {
+  if (!DEV_MODE) return;
+  if (!user || userRole !== 'customer') return;
+
+  const reqRef = rtdbRef(database, `requests/${BOT_CLEANER_ID}`);
+
+  const unsub = onValue(reqRef, async (snap) => {
+    const req = snap.val();
+    if (!req || req.status !== 'pending') return;
+
+    console.log('🤖 Bot received request, auto-accepting');
+
+    // Accept request
+    await rtdbUpdate(reqRef, {
+      status: 'accepted',
+      cleanerUid: BOT_CLEANER_ID,
+      cleanerName: 'Bot Cleaner 🤖',
+      acceptedAt: Date.now(),
+      isAvailable: true,
+    });
+
+    // Link job to customer UI
+setActiveJob({
+  cleanerUid: BOT_CLEANER_ID,
+  customerUid: user.uid,
+  status: 'accepted',
+});
+
+// Open chat
+setChatWith(BOT_CLEANER_ID);
+
+//  THIS is what was missing 
+sendBotFirstMessage(user.uid);
+
+// Build conversation ID (same logic as your chat)
+const convoId = [user.uid, BOT_CLEANER_ID].sort().join('_');
+const messagesRef = collection(
+  db,
+  'conversations',
+  convoId,
+  'messages'
+);
+
+// Small delay to ensure UI mounts chat
+setTimeout(async () => {
+  await addDoc(messagesRef, {
+    sender: BOT_CLEANER_ID,
+    text: '🤖 Hello! I’m your cleaner. I’m on my way 😊',
+    createdAt: serverTimestamp(),
+  });
+
+  console.log('🤖 Bot sent first hello');
+}, 300);
+
+
+    // Create booking (match your real structure)
+    await addDoc(collection(db, 'bookings'), {
+      cleanerUid: BOT_CLEANER_ID,
+      customerUid: req.from,
+      status: 'active',
+      createdAt: serverTimestamp(),
+    });
+  });
+
+  return () => unsub();
+}, [DEV_MODE, user, userRole]);
+
+
+useEffect(() => {
+  if (!DEV_MODE) return;
+  if (!chatWith || chatWith !== BOT_CLEANER_ID) return;
+  if (!user) return;
+
+  const convoId = [user.uid, BOT_CLEANER_ID].sort().join('_');
+  const messagesRef = collection(
+    db,
+    'conversations',
+    convoId,
+    'messages'
+  );
+
+  let botHasReplied = false;
+  // Listen to all messages
+  const unsub = onSnapshot(messagesRef, async (snap) => {
+  // If bot already replied, do nothing
+  if (botHasReplied) return;
+
+  const messages = snap.docs.map(doc => doc.data());
+  const last = messages.at(-1);
+
+  // If no messages yet, wait
+  if (!last) return;
+
+  // Ignore if last message was from bot itself
+  if (last.sender === BOT_CLEANER_ID) return;
+
+  // At this point, a customer has sent a message and bot hasn't replied yet
+  botHasReplied = true;
+
+  // Set job as accepted and open chat
+  setActiveJob({
+    cleanerUid: BOT_CLEANER_ID,
+    customerUid: currentUser.uid,
+    status: "accepted"
+  });
+
+  setChatWith(BOT_CLEANER_ID);
+
+  // Send the first hello message
+  try {
+    await addDoc(messagesRef, {
+      sender: BOT_CLEANER_ID,
+      text: '🤖 Hello! I am your bot cleaner. How can I help you today?',
+      createdAt: serverTimestamp(),
+    });
+    console.log("Bot sent the first message!");
+  } catch (error) {
+    console.error("Error sending bot message:", error);
+  }
+});
+
+  // const unsub = onSnapshot(messagesRef, (snap) => {
+  //   const last = snap.docs.at(-1)?.data();
+  //   if (!last) return;
+
+  //   // Ignore bot's own messages
+  //   if (last.sender === BOT_CLEANER_ID) return;
+
+  //   setTimeout(async () => {
+  //     setActiveJob({
+  //     cleanerUid: BOT_CLEANER_ID ,
+  //     customerUid: currentUser.uid,
+  //     status: "accepted"
+  //   });
+
+  //   setChatWith(BOT_CLEANER_ID );
+
+      
+  //     await addDoc(messagesRef, {
+  //       sender: BOT_CLEANER_ID,
+  //       text: '🤖 Bot here! Message received.',
+  //       createdAt: serverTimestamp(),
+  //     });
+  //   }, 500);
+  // });
+
+  return () => unsub();
+}, [DEV_MODE, chatWith, user]);
+
+
 
 
   return (

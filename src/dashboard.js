@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, UserCog } from "lucide-react";
+import { getAuth, onAuthStateChanged,  updatePassword } from "firebase/auth"; 
 
 import ModalPanel from "./components/ModalPanel";
 import lastWeekBookings from "./components/WeeklyBarGraph";
@@ -18,6 +19,8 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import ProfileForm from "./components/profileform";
 // import { getAuth, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+
+
 
  
 import {
@@ -106,14 +109,19 @@ export default function DashboardLayout() {
   const [current, setCurrent] = useState(0);
     // realtime locations (from RTDB)
   const [locations, setLocations] = useState({});
-  
+  const [currentUser, setCurrentUser] = useState(null);
+    // Admin modal fields
+  const [adminEditName, setAdminEditName] = useState("");
+  const [adminEditEmail, setAdminEditEmail] = useState("");
+  const [adminEditPassword, setAdminEditPassword] = useState(""); // previously missing
+  const auth = getAuth();
+
+
   const navigate = useNavigate();
 
   const [activePanel, setActivePanel] = useState("dashboard");
   const [showAdminEdit, setShowAdminEdit] = useState(false);
-  // modal selection
-  const [adminEditName, setAdminEditName] = useState("");
-  const [adminEditEmail, setAdminEditEmail] = useState("");
+   
  
 
   // raw collections
@@ -159,7 +167,8 @@ export default function DashboardLayout() {
         const data = { id: d.id, ...d.data() };
         map[d.id] = data;
         if (data.role === "cleaner") cleanersList.push(data);
-        if (!admin && data.role === "admin") admin = data;
+        // if (!admin && data.role === "admin") admin = data;
+        if (admin) setAdminProfile(admin);
       });
       setUsersMap(map);
       setCleaners(cleanersList);
@@ -291,7 +300,7 @@ export default function DashboardLayout() {
   // 2) Next 3 active jobs: pending, accepted, in-progress, working, onjob
   const activeJobs = bookingsWithDate.filter((b) => {
     const st = String(b.status || "").toLowerCase();
-    return ["pending...", "accepted", "in-progress", "working", "onjob"].includes(st);
+    return ["pending", "accepted", "in-progress", "working", "onjob"].includes(st);
   }).slice(0, 3);
 
   // 3) Top 3 rated cleaners: derived from ratings collection (we'll compute locally from usersMap and bookings)
@@ -464,12 +473,56 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
   };
 
   // https://github.com/raymondkembs/geolocation.git
+ 
+ 
+useEffect(() => {
+  const auth = getAuth();
+
+  const unsub = onAuthStateChanged(auth, user => {
+    if (!user) return;
+
+    const unsubProfile = onSnapshot(
+      doc(db, "users", user.uid),
+      snap => {
+        if (!snap.exists()) return;
+        setAdminProfile({ id: snap.id, ...snap.data() });
+      }
+    );
+
+    return () => unsubProfile();
+  });
+
+  return () => unsub();
+}, []);
+
+
+ 
   useEffect(() => {
-  if (showAdminEdit && adminProfile) {
+  if (!currentUser?.uid) return;
+
+  const unsub = onSnapshot(
+    doc(db, "users", currentUser.uid),
+    snap => {
+      if (!snap.exists()) return;
+
+      const profile = { id: snap.id, ...snap.data() };
+      setAdminProfile(profile);
+    }
+  );
+
+  return () => unsub();
+}, [currentUser]);
+
+  useEffect(() => {
+  console.log("showAdminEdit:", showAdminEdit, adminProfile );
+    if (showAdminEdit && adminProfile) {
     setAdminEditName(adminProfile.name || "");
     setAdminEditEmail(adminProfile.email || "");
+    setAdminEditPassword("");  
   }
+   
 }, [showAdminEdit, adminProfile]);
+ 
 
   return ( 
     <div className="flex min-h-screen bg-gray-100">
@@ -519,7 +572,6 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
             </button>
           </div>
         </div>
-
 
         <SidebarNav
           activePanel={activePanel}
@@ -667,7 +719,7 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
               </section>
             {/* </div> */}
 
-{/* ----------------------------------------------SECTION TWO------------------------------- */}
+            {/* ----------------------------------------------SECTION TWO------------------------------- */}
           
             <section>
               <h3 className="mb-3 text-lg font-semibold text-gray-800">
@@ -847,32 +899,92 @@ const createRoleIcon = (imageUrl, role = 'cleaner') =>
           </ModalPanel>
         )}
  
-{console.log(showAdminEdit, adminProfile)}
-    {showAdminEdit && adminProfile && (
-      <ModalPanel
-        title="Edit Admin Profile"
-        onClose={() => setShowAdminEdit(false)}
-      >
-        <input value={adminEditName} onChange={e => setAdminEditName(e.target.value)} />
-        <input value={adminEditEmail} onChange={e => setAdminEditEmail(e.target.value)} />
-        <button
-          onClick={async () => {
-            await updateDoc(doc(db, "users", adminProfile.id), {
-              name: adminEditName,
-              email: adminEditEmail
-            });
-            setShowAdminEdit(false);
-          }}
-        >
-          Save
-        </button>
-      </ModalPanel>
-    )}
-
-
-
-
+        {console.log(showAdminEdit, adminProfile)}
+    
       </main>
+
+      {showAdminEdit  && (
+        <ModalPanel
+          title="Edit Admin Profile"
+          onClose={() => setShowAdminEdit(false)}
+        >
+          {!adminProfile ? (
+            <p className="text-gray-500">Loading admin profile...</p>
+          ): (
+            <>
+              <div className="bg-white rounded-2xl my-2  w-full mx-auto">
+               
+              <div className="mb-4">
+                <label className="block text-gray-600 mb-2" htmlFor="adminName">
+                  Name
+                </label>
+                <input
+                  id="adminName"
+                  value={adminEditName}
+                  onChange={e => setAdminEditName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  placeholder="Enter name"
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-gray-600 mb-2" htmlFor="adminEmail">
+                  Email
+                </label>
+                <input
+                  id="adminEmail"
+                  value={adminEditEmail}
+                  onChange={e => setAdminEditEmail(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  placeholder="Enter email"
+                />
+              </div>
+
+               {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password <span className="text-gray-400">(leave blank to keep current)</span>
+                </label>
+                <input
+                  type="password"
+                  className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  value={adminEditPassword}
+                  onChange={(e) => setAdminEditPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div className="flex justify-end border-t-2 pt-4 mt-5 border-gray-300">
+                <button
+                    onClick={async () => {
+                      try {
+                        await updateDoc(doc(db, "users", adminProfile.id), {
+                          name: adminEditName,
+                          email: adminEditEmail
+                        });
+
+                        if (adminEditPassword.trim()) {
+                          await updatePassword(auth.currentUser, adminEditPassword);
+                        }
+
+                        setShowAdminEdit(false);
+                      } catch (err) {
+                        console.error("Failed to update profile:", err);
+                        alert("Failed to update profile: " + err.message);
+                      }
+                    }}
+                  className="w-[30%] bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+
+            </>
+          )}
+        </ModalPanel>
+      )}
+
     </div>
   );
 }
